@@ -26,21 +26,21 @@ if uploaded_file:
     page_slider = st.slider("瀏覽區間", 0, total_rows, (start, end))
     #full_render = st.checkbox("允許逐筆繪圖，最多100,000 (可能變慢)",value=False)
 
-    # 3. 邏輯處理：縮放與分頁
-    # 當筆數 > 2000 進行抽樣 (Downsampling)
+# 建議在檔案最上方設定一個常數，方便管理
+    MAX_POINTS_WITHOUT_SAMPLING = 200000 
 
+    # 3. 邏輯處理：縮放與分頁
     display_df = df.iloc[start:end]
 
-    #if not full_render:
-    if len(display_df) > 100000:
-      target = 100000
-      n = len(display_df)
-      step = int(np.ceil(n / target))
-      # 限制 step 不要太大（避免跳太兇）
-      step = min(step, 10)
-      display_df = display_df.iloc[::step]
-      st.warning("資料量大於 100,000 筆，已啟用快速抽樣顯示")
-
+    if len(display_df) > MAX_POINTS_WITHOUT_SAMPLING:
+        # 當資料量大於設定的閾值時，才進行抽樣
+        target = MAX_POINTS_WITHOUT_SAMPLING
+        n = len(display_df)
+        step = int(np.ceil(n / target))
+        # 限制 step 不要太大，避免跳太兇導致訊號失真
+        step = min(step, 10)
+        display_df = display_df.iloc[::step]
+        st.warning(f"資料量大於 {MAX_POINTS_WITHOUT_SAMPLING:,} 筆，已啟用自動抽樣以維持流暢度")
     #else:
         # 安全保護
     #    if len(display_df) > 100000:
